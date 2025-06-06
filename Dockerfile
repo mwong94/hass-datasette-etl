@@ -22,8 +22,9 @@ RUN mkdir -p $DAGSTER_HOME
 # Copy Dagster configuration
 COPY dagster.yaml $DAGSTER_HOME/
 
-# Expose Dagster webserver port
-EXPOSE 3000
+# Entrypoint using shell script to manage dev vs prod modes
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-# Command to run Dagster webserver
-CMD ["dagster", "dev", "-h", "0.0.0.0", "-p", "3000", "-w", "workspace.yaml"]
+EXPOSE 3000
+ENTRYPOINT ["docker-entrypoint.sh"]
