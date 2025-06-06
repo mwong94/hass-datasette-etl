@@ -1,0 +1,40 @@
+services:
+  # Dagster webserver
+  dagster:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./hass_datasette_etl:/app/hass_datasette_etl
+      - dagster_home:/app/dagster_home
+    env_file:
+      - .env
+    environment:
+      - DAGSTER_BASE_URL=http://localhost:3000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Dagster daemon for running schedules and sensors
+#  dagster_daemon:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    volumes:
+#      - ./hass_datasette_etl:/app/hass_datasette_etl
+#      - dagster_home:/app/dagster_home
+#    env_file:
+#      - .env
+#    command: ["dagster-daemon", "run"]
+#    restart: unless-stopped
+#    depends_on:
+#      - dagster
+
+volumes:
+  dagster_home:

@@ -1,0 +1,4 @@
+load_from:
+  - python_module:
+      module_name: hass_datasette_etl     # import path to your package
+      attribute: defs                     # Definitions object to load

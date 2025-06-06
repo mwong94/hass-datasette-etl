@@ -1,0 +1,18 @@
+[project]
+name = "hass-datasette-etl"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "dagster>=1.10.19",
+    "dagster-snowflake>=0.26.19",
+    "dagster-snowflake-pandas>=0.26.19",
+    "dagster-webserver>=1.10.19",
+    "pandas>=2.3.0",
+    "requests>=2.31.0",
+    "snowflake-connector-python>=3.0.0",
+]
+
+[tool.dagster]
+module = "hass_datasette_etl"   # import path
+attribute = "defs"              # Definitions variable to load
