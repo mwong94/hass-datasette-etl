@@ -27,7 +27,8 @@ ENV/
 
 # Dagster
 dagster_home/
-logs/
+**/logs/
+**/*.log
 
 # Environment variables
 .env
