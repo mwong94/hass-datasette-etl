@@ -9,5 +9,5 @@ if [ "$MODE" = "prod" ]; then
   exec dagster webserver -h 0.0.0.0 -p 3000 -w workspace.yaml
 else
   echo "Starting Dagster dev server…"
-  exec dagster dev -h 0.0.0.0 -p 3000 -w workspace.yaml
+  exec /app/.venv/bin/dagster dev -h 0.0.0.0 -p 3000 -w workspace.yaml
 fi

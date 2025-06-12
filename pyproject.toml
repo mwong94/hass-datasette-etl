@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.12"
 dependencies = [
+    "clickhouse-io-manager",
     "dagster>=1.10.19",
     "dagster-dbt>=0.26.19",
     "dagster-snowflake>=0.26.19",
@@ -19,3 +20,6 @@ dependencies = [
 [tool.dagster]
 module = "hass_datasette_etl"   # import path
 attribute = "defs"              # Definitions variable to load
+
+[tool.uv.sources]
+clickhouse-io-manager = { git = "https://github.com/mwong94/clickhouse-io-manager.git", rev = "v0.1.7" }
