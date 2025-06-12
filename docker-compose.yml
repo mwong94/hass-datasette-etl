@@ -22,8 +22,8 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server:latest
     ports:
-      - "8143:8123"  # HTTP interface
-      - "9004:9000"  # Native interface
+      - 8143:8123
+      - 9004:9000
     volumes:
       - /data/docker/hass/clickhouse:/var/lib/clickhouse
     env_file: .env
