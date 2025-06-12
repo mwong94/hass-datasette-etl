@@ -31,7 +31,7 @@ dagster_home/
 **/*.log
 
 # Environment variables
-.env
+**/.env
 
 # IDE
 .idea/
