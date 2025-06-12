@@ -3,12 +3,13 @@ Dagster assets for extracting data from Home Assistant Datasette endpoint.
 """
 
 import os
+import json
 import requests
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta, UTC
 from dagster import asset, AssetExecutionContext, DailyPartitionsDefinition, MetadataValue, ScheduleDefinition, define_asset_job, build_schedule_from_partitioned_job
-from dagster_snowflake import SnowflakeResource
-from snowflake.connector.pandas_tools import write_pandas
+import numpy as np
+from typing import Any
 
 
 # Define daily partitions starting from 2023-01-01
@@ -121,7 +122,41 @@ def fetch_datasette_data(table_name, partition_date: str = '2025-01-01', context
 
     context.log.debug(f"{all_data.head().to_markdown()}")
 
-    all_data["loaded_at"] = datetime.now()
+    def _to_string(val: Any) -> str:
+        if pd.isna(val):
+            return ''
+
+        if isinstance(val, (dict, list)):
+            try:
+                return json.dumps(val, ensure_ascii=False)
+            except (TypeError, ValueError):
+                # Fallback if object isn’t JSON-serialisable
+                return str(val)
+
+        # pandas.Timestamp or datetime
+        if isinstance(val, (pd.Timestamp, datetime)):
+            # Normalise to UTC
+            if val.tzinfo is None:
+                val = val.replace(tzinfo=UTC)
+            else:
+                val = val.astimezone(UTC)
+            # Seconds → milliseconds, keep as int then str
+            return str(int(val.timestamp() * 1000))
+
+        # Pure date (exclude datetimes, which are already handled)
+        if isinstance(val, date) and not isinstance(val, datetime):
+            return val.isoformat()
+
+        # Everything else
+        return str(val)
+
+    all_data = all_data.applymap(_to_string)
+    # all_data = all_data.applymap(str)
+    timestamp = datetime.timestamp(datetime.now(UTC))
+    all_data["loaded_at"] = np.array([timestamp] * len(all_data), dtype=float)
+
+    context.log.debug(timestamp)
+    context.log.debug(all_data.loaded_at.head(10))
 
     return all_data
 
@@ -129,14 +164,14 @@ def fetch_datasette_data(table_name, partition_date: str = '2025-01-01', context
 @asset(
     name="statistics",
     partitions_def=daily_partitions,
-    required_resource_keys={"snowflake_io_manager"},
-    io_manager_key="snowflake_io_manager",
+    required_resource_keys={"clickhouse_io_manager"},
+    io_manager_key="clickhouse_io_manager",
     metadata={"schema": "raw", "table": "statistics", "partition_expr": "created_ts"},
 )
 def statistics(context: AssetExecutionContext):
     """
     Asset that extracts statistics data from Home Assistant Datasette endpoint
-    and writes it to Snowflake.
+    and writes it to Clickhouse.
     """
     partition_date = context.partition_key
     context.log.info(f"Extracting statistics data for {partition_date}")
@@ -150,7 +185,7 @@ def statistics(context: AssetExecutionContext):
             "num_rows": len(df),
             "preview": MetadataValue.md(df.head().to_markdown() if not df.empty else "No data"),
             "partition_date": partition_date,
-            "destination": "hass.raw.statistics in Snowflake",
+            "destination": "raw.statistics in Clickhouse",
         }
     )
 
@@ -160,11 +195,12 @@ def statistics(context: AssetExecutionContext):
 @asset(
     name="statistics_meta",
     metadata={"schema": "raw", "table": "statistics_meta"},
+    io_manager_key="clickhouse_io_manager",
 )
-def statistics_meta(context: AssetExecutionContext, snowflake: SnowflakeResource):
+def statistics_meta(context: AssetExecutionContext):
     """
     Asset that extracts statistics metadata from Home Assistant Datasette endpoint
-    and appends it to Snowflake table without truncating previous data.
+    and appends it to Clickhouse table without truncating previous data.
     """
     context.log.info(f"Extracting statistics metadata")
 
@@ -176,32 +212,32 @@ def statistics_meta(context: AssetExecutionContext, snowflake: SnowflakeResource
         metadata={
             "num_rows": len(df),
             "preview": MetadataValue.md(df.head().to_markdown() if not df.empty else "No data"),
-            "destination": "hass.raw.statistics_meta in Snowflake",
+            "destination": "raw.statistics_meta in Clickhouse. Truncating previous data if any.",
             "extraction_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
     )
 
     # Append data to Snowflake table
-    if not df.empty:
-        # Connect to Snowflake and write data
-        with snowflake.get_connection() as conn:
-            context.log.info(f"Appending {len(df)} rows to statistics_meta table")
-
-            # Use write_pandas from snowflake.connector.pandas_tools
-            df.columns = [col.upper() for col in df.columns]
-            success, num_chunks, num_rows, _ = write_pandas(
-                conn=conn,
-                df=df,
-                table_name="STATISTICS_META",
-                database=os.environ.get('SNOWFLAKE_DATABASE').upper(),
-                schema="RAW",
-                auto_create_table=False
-            )
-
-            if success:
-                context.log.info(f"Successfully appended {num_rows} rows in {num_chunks} chunks")
-            else:
-                raise Exception("Failed to write data to Snowflake")
+    # if not df.empty:
+    #     # Connect to Snowflake and write data
+    #     with snowflake.get_connection() as conn:
+    #         context.log.info(f"Appending {len(df)} rows to statistics_meta table")
+    #
+    #         # Use write_pandas from snowflake.connector.pandas_tools
+    #         df.columns = [col.upper() for col in df.columns]
+    #         success, num_chunks, num_rows, _ = write_pandas(
+    #             conn=conn,
+    #             df=df,
+    #             table_name="STATISTICS_META",
+    #             database=os.environ.get('SNOWFLAKE_DATABASE').upper(),
+    #             schema="RAW",
+    #             auto_create_table=False
+    #         )
+    #
+    #         if success:
+    #             context.log.info(f"Successfully appended {num_rows} rows in {num_chunks} chunks")
+    #         else:
+    #             raise Exception("Failed to write data to Snowflake")
 
     return df
 

@@ -4,13 +4,23 @@ FROM python:3.12-slim
 # Set working directory
 WORKDIR /app
 
+# Install git and clean up apt cache
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+ADD https://astral.sh/uv/install.sh /uv-installer.sh
+RUN sh /uv-installer.sh && rm /uv-installer.sh
+ENV PATH="/root/.local/bin/:$PATH"
+
 # Copy project files
-COPY pyproject.toml .
+COPY pyproject.toml uv.lock ./
 COPY workspace.yaml .
-#COPY hass_datasette_etl ./hass_datasette_etl
 
 # Install dependencies
-RUN pip install --no-cache-dir -e .
+# RUN pip install --no-cache-dir -e .
+RUN uv sync --locked
 
 # Set environment variables
 ENV PYTHONPATH=/app

@@ -1,52 +1,49 @@
 -- ──────────────────────────────────────────────────────────────────────
--- Change these to the correct database and schema before running
+-- clickhouse syntax for creating tables in hass database
 -- ──────────────────────────────────────────────────────────────────────
-USE DATABASE HASS;
-USE SCHEMA   RAW;
+create database if not exists raw;
 
 ------------------------------------------------------------------------
--- STATISTICS  (raw.statistics)
+-- statistics table
 ------------------------------------------------------------------------
-CREATE OR REPLACE TABLE STATISTICS
+create or replace table raw.statistics
 (
-    ID                 TEXT,
-    CREATED            TEXT,
-    CREATED_TS         TEXT    NOT NULL,
-    METADATA_ID        TEXT    NOT NULL,
-    "START"            TEXT,
-    START_TS           TEXT    NOT NULL,
-    MEAN               TEXT,
-    MIN                TEXT,
-    MAX                TEXT,
-    LAST_RESET         TEXT,
-    LAST_RESET_TS      TEXT,
-    STATE              TEXT,
-    SUM                TEXT,
-    MEAN_WEIGHT        TEXT,
-    LOADED_AT          TIMESTAMP,
+    id                 String,
+    created            String,
+    created_ts         String not null,
+    metadata_id        String not null,
+    start              String,
+    start_ts           String not null,
+    mean               String,
+    min                String,
+    max                String,
+    last_reset         String,
+    last_reset_ts      String,
+    state              String,
+    sum                String,
+    mean_weight        String,
+    loaded_at          Double
+) engine = MergeTree()
+primary key (metadata_id, start_ts)
+comment 'home-assistant aggregated sensor statistics';
 
-    CONSTRAINT PK_STATISTICS PRIMARY KEY (METADATA_ID, START_TS)
-)
-COMMENT = 'Home-Assistant aggregated sensor statistics';
-
--- (optional) clustering can help for date-range queries
--- ALTER TABLE STATISTICS CLUSTER BY (START_TS);
+-- (optional) sorting can help for date-range queries
+-- order by (start_ts);
 
 ------------------------------------------------------------------------
--- STATISTICS_META  (raw.statistics_meta)
+-- statistics_meta table
 ------------------------------------------------------------------------
-CREATE OR REPLACE TABLE STATISTICS_META
+create or replace table raw.statistics_meta
 (
-    ID                  TEXT,              -- surrogate key
-    STATISTIC_ID        TEXT    NOT NULL,  -- original HA statistic_id
-    SOURCE              TEXT,              -- e.g. 'recorder'
-    UNIT_OF_MEASUREMENT TEXT,
-    HAS_MEAN            TEXT,              -- TRUE/FALSE as text
-    HAS_SUM             TEXT,              -- TRUE/FALSE as text
-    NAME                TEXT,
-    MEAN_TYPE           TEXT,
-    LOADED_AT          TIMESTAMP,
-
-    CONSTRAINT PK_STATISTICS_META PRIMARY KEY (ID)
-)
-COMMENT = 'Metadata describing every statistic_id present in Home-Assistant';
+    id                  String,              -- surrogate key
+    statistic_id        String not null,     -- original ha statistic_id
+    source              String,              -- e.g. 'recorder'
+    unit_of_measurement String,
+    has_mean            String,              -- true/false as text
+    has_sum             String,              -- true/false as text
+    name                String,
+    mean_type           String,
+    loaded_at           Double
+) engine = MergeTree()
+primary key (id)
+comment 'metadata describing every statistic_id present in home-assistant';
