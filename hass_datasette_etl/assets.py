@@ -6,14 +6,19 @@ import os
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
-from dagster import asset, AssetExecutionContext, DailyPartitionsDefinition, MetadataValue, ScheduleDefinition, define_asset_job
+from dagster import asset, AssetExecutionContext, DailyPartitionsDefinition, MetadataValue, ScheduleDefinition, define_asset_job, build_schedule_from_partitioned_job
 from dagster_snowflake import SnowflakeResource
 from snowflake.connector.pandas_tools import write_pandas
 
 
 # Define daily partitions starting from 2023-01-01
 start_date = datetime(2023, 1, 1)
-daily_partitions = DailyPartitionsDefinition(start_date=start_date)
+daily_partitions = DailyPartitionsDefinition(
+    start_date=start_date,
+    execution_timezone='America/Los_Angeles',
+    hour_offset=0,
+    minute_offset=15
+)
 
 # Base URL for the Datasette endpoint
 DATASETTE_BASE_URL = os.environ.get("DATASETTE_BASE_URL", "http://192.168.1.138:8001")
@@ -200,23 +205,32 @@ def statistics_meta(context: AssetExecutionContext, snowflake: SnowflakeResource
 
     return df
 
-
-# Define a job that will materialize the assets
+##### statistics asset job and schedule
 statistics_job = define_asset_job(
     name="statistics_job",
-    selection=[statistics, statistics_meta],
-    description="Job that materializes statistics and statistics_meta assets"
+    selection=[statistics],
+    description="Job that materializes the statistics asset"
+)
+statistics_schedule = build_schedule_from_partitioned_job(
+    name="daily_statistics_schedule",
+    job=statistics_job,
+    description="Daily schedule for statistics asset"
 )
 
-# Define a daily schedule for the job
-statistics_schedule = ScheduleDefinition(
-    name="daily_statistics_schedule",
-    cron_schedule="15 0 * * *",  # Run at midnight every day
-    job=statistics_job,
+##### statistics_meta asset job and schedule
+statistics_meta_job = define_asset_job(
+    name="statistics_meta_job",
+    selection=[statistics],
+    description="Job that materializes the statistics asset"
+)
+statistics_meta_schedule = ScheduleDefinition(
+    name="weekly_statistics_meta_schedule",
+    cron_schedule="20 0 * * 0",  # 00:20 on Sunday morning
+    job=statistics_meta_job,
     execution_timezone="America/Los_Angeles",
-    description="Daily schedule for statistics and statistics_meta assets"
+    description="Weekly schedule for statistics_meta asset"
 )
 
 # Group assets and schedules for export
 statistics_assets = [statistics, statistics_meta]
-statistics_schedules = [statistics_schedule]
+statistics_schedules = [statistics_schedule, statistics_meta_schedule]
