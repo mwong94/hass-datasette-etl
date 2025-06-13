@@ -1,0 +1,22 @@
+
+version: 2
+
+sources:
+  - name: raw
+    database: raw
+    tables:
+      - name: statistics
+      - name: statistics_meta
+
+models:
+  - name: stg_statistics
+    description: "Home Assistant 5min aggregate statistics"
+    columns:
+      - name: id
+        description: "Primary key"
+        tests:
+          - unique
+          - not_null
+  - name: stg_statistics_meta
+    description: "Home Assistant statistics metadata"
+

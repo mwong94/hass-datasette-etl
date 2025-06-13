@@ -12,6 +12,10 @@ import numpy as np
 from typing import Any
 
 
+# ---------------------------------------------------------------------
+# HASS assets
+# ---------------------------------------------------------------------
+
 # Define daily partitions starting from 2023-01-01
 start_date = datetime(2023, 1, 1)
 daily_partitions = DailyPartitionsDefinition(
@@ -163,6 +167,8 @@ def fetch_datasette_data(table_name, partition_date: str = '2025-01-01', context
 
 @asset(
     name="statistics",
+    group_name="hass",
+    key_prefix="hass",
     partitions_def=daily_partitions,
     required_resource_keys={"clickhouse_io_manager"},
     io_manager_key="clickhouse_io_manager",
@@ -194,6 +200,8 @@ def statistics(context: AssetExecutionContext):
 
 @asset(
     name="statistics_meta",
+    group_name="hass",
+    key_prefix="hass",
     metadata={"schema": "raw", "table": "statistics_meta"},
     io_manager_key="clickhouse_io_manager",
 )

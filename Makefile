@@ -4,14 +4,16 @@ up:
 up-d:
 	docker compose up -d dagster
 
+up-b:
+	docker compose up --build dagster
+
 build-no-cache:
 	docker compose build --no-cache dagster
 
 down:
 	docker compose stop
-	docker compose down -v --remove-orphans
 
-ch:
+db:
 	docker compose up --build -d clickhouse
 
 up-build: down build-no-cache up
