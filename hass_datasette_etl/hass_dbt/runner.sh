@@ -4,4 +4,4 @@ set -a
 source ../../.env
 set +a
 
-dbt run "$@"
+dbt run --profiles-dir ../profiles "$@"

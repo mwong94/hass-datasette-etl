@@ -15,6 +15,6 @@ select
     , toTimezone(last_reset_at_utc, 'America/Los_Angeles') as last_reset_at_local
     , toFloat64OrNull(s.state) as state
     , toFloat64OrNull(s.sum) as sum
-    , toFloat64OrNull(s.loaded_at) as loaded_ts
+    , s.loaded_at
 
 from {{ source('raw', 'statistics') }} as s
