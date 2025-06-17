@@ -6,7 +6,7 @@ create database if not exists raw;
 ------------------------------------------------------------------------
 -- statistics table
 ------------------------------------------------------------------------
-create or replace table raw.statistics
+create table if not exists raw.statistics
 (
     id                 String,
     created            String,
@@ -23,8 +23,9 @@ create or replace table raw.statistics
     sum                String,
     mean_weight        String,
     loaded_at          Double
-) engine = MergeTree()
-primary key (metadata_id, start_ts)
+) engine = ReplacingMergeTree()
+primary key (id)
+order by (id)
 comment 'home-assistant aggregated sensor statistics';
 
 -- (optional) sorting can help for date-range queries
@@ -33,7 +34,7 @@ comment 'home-assistant aggregated sensor statistics';
 ------------------------------------------------------------------------
 -- statistics_meta table
 ------------------------------------------------------------------------
-create or replace table raw.statistics_meta
+create table if not exists raw.statistics_meta
 (
     id                  String,              -- surrogate key
     statistic_id        String not null,     -- original ha statistic_id

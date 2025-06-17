@@ -10,6 +10,7 @@ dependencies = [
     "dagster-snowflake>=0.26.19",
     "dagster-snowflake-pandas>=0.26.19",
     "dagster-webserver>=1.10.19",
+    "dbt-clickhouse>=1.9.2",
     "dbt-core>=1.9.6",
     "dbt-snowflake>=1.9.4",
     "pandas>=2.3.0",

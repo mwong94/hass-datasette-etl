@@ -1,0 +1,12 @@
+
+version: 2
+
+models:
+  - name: statistics
+    description: "Home Assistant 5min aggregate statistics"
+    columns:
+      - name: id
+        description: "Primary key"
+        tests:
+          - unique
+          - not_null

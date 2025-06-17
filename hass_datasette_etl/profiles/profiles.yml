@@ -1,0 +1,33 @@
+hass_dbt:          # ← must match the `profile:` name in dbt_project.yml
+  target: dev           # default target dbt will use locally
+  outputs:
+
+    dev:                # ── LOCAL / SANDBOX ────────────────────────────────
+      type: clickhouse
+      driver: http      # http or native
+      host: "{{ env_var('CLICKHOUSE_HOST', 'localhost') }}"
+      port: 8143
+      schema: hass_dev          # ClickHouse “database”
+      user: "{{ env_var('CLICKHOUSE_USER', 'default') }}"
+      password: "{{ env_var('CLICKHOUSE_PASSWORD', '') }}"
+      secure: false                  # plain HTTP
+#      verify: true                   # ignore if secure: false
+      threads: 4
+      retries: 2
+      connect_timeout: 10
+      send_receive_timeout: 300
+
+    prod:              # ── STAGING / PROD  ────────────────────────────────
+      type: clickhouse
+      driver: http
+      host: "{{ env_var('CLICKHOUSE_HOST') }}"
+      port: 8143                     # HTTPS default
+      schema: hass
+      user: "{{ env_var('CLICKHOUSE_USER') }}"
+      password: "{{ env_var('CLICKHOUSE_PASSWORD') }}"
+      secure: false                   # HTTPS
+#      verify: true                   # validate TLS cert
+      threads: 4
+      retries: 3
+      connect_timeout: 10
+      send_receive_timeout: 300

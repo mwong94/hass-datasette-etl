@@ -46,3 +46,4 @@ Thumbs.db
 # dbt
 hass_datasette_etl/hass_dbt/target/
 hass_datasette_etl/hass_dbt/dbt_packages/
+hass_datasette_etl/profiles/.user.yml

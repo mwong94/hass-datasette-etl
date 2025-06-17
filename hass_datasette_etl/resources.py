@@ -6,6 +6,9 @@ import os
 from dagster import ConfigurableResource
 from dagster_snowflake import SnowflakeResource
 
+# ---------------------------------------------------------------------
+# Snowflake Resource
+# ---------------------------------------------------------------------
 
 class SnowflakeConfig(ConfigurableResource):
     """
