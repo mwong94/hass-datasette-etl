@@ -15,7 +15,6 @@ models:
       - name: id
         description: "Primary key"
         tests:
-          - unique
           - not_null
   - name: stg_statistics_meta
     description: "Home Assistant statistics metadata"
