@@ -18,3 +18,5 @@ select
     , s.loaded_at
 
 from {{ source('raw', 'statistics') }} as s
+
+final

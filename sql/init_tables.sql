@@ -23,7 +23,7 @@ create table if not exists raw.statistics
     sum                String,
     mean_weight        String,
     loaded_at          Double
-) engine = ReplacingMergeTree()
+) engine = ReplacingMergeTree(loaded_at)
 primary key (id)
 order by (id)
 comment 'home-assistant aggregated sensor statistics';
@@ -45,6 +45,59 @@ create table if not exists raw.statistics_meta
     name                String,
     mean_type           String,
     loaded_at           Double
-) engine = MergeTree()
+) engine = ReplacingMergeTree(loaded_at)
 primary key (id)
+order by (id)
 comment 'metadata describing every statistic_id present in home-assistant';
+
+------------------------------------------------------------------------
+-- events table
+------------------------------------------------------------------------
+create table if not exists raw.events
+(
+    event_id             String,
+    event_type           String,
+    event_data           String,
+    origin               String,
+    origin_idx           String,
+    time_fired           String,
+    time_fired_ts        String,
+    context_id           String,
+    context_user_id      String,
+    context_parent_id    String,
+    data_id              String,
+    context_id_bin       String,
+    context_user_id_bin  String,
+    context_parent_id_bin String,
+    event_type_id        String,
+    loaded_at            Double
+) engine = ReplacingMergeTree(loaded_at)
+primary key (event_id)
+order by (event_id)
+comment 'every event fired in home-assistant';
+
+------------------------------------------------------------------------
+-- event_data table
+------------------------------------------------------------------------
+create table if not exists raw.event_data
+(
+    data_id     String not null,
+    hash        String,
+    shared_data String,
+    loaded_at   Double
+) engine = ReplacingMergeTree(loaded_at)
+primary key (data_id)
+order by (data_id)
+comment 'event data shared payloads';
+
+------------------------------------------------------------------------
+-- event_types table
+------------------------------------------------------------------------
+create table if not exists raw.event_types  (
+    event_type_id   String not null,
+    event_type      String,
+    loaded_at       Double
+) engine = ReplacingMergeTree(loaded_at)
+primary key (event_type_id)
+order by (event_type_id)
+comment 'event types';

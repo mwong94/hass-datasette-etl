@@ -3,24 +3,14 @@ import json
 import requests
 import pandas as pd
 from datetime import date, datetime, timedelta, UTC
-from dagster import DailyPartitionsDefinition
 import numpy as np
 from typing import Any
-
-# Define daily partitions starting from 2023-01-01
-start_date = datetime(2023, 1, 1)
-daily_partitions = DailyPartitionsDefinition(
-    start_date=start_date,
-    execution_timezone='America/Los_Angeles',
-    hour_offset=0,
-    minute_offset=15
-)
 
 # Base URL for the Datasette endpoint
 DATASETTE_BASE_URL = os.environ.get("DATASETTE_BASE_URL", "http://192.168.1.138:8001")
 
 
-def fetch_datasette_data(table_name, partition_date: str = '2025-01-01', context=None):
+def fetch_datasette_data(table_name, partition_date: str = None, partition_col: str = None, context=None):
     """
     Fetch data from Datasette JSON endpoint for a specific table and date.
     Handles pagination to retrieve all rows.
@@ -28,18 +18,16 @@ def fetch_datasette_data(table_name, partition_date: str = '2025-01-01', context
     Args:
         table_name: Name of the table to fetch data from
         partition_date: Date to filter data for
+        partition_col: Column to filter data on
         context: Optional AssetExecutionContext for logging
 
     Returns:
         DataFrame containing the fetched data
     """
-    # Convert partition date to datetime
-    date_obj = datetime.strptime(partition_date, "%Y-%m-%d")
-    next_day = date_obj + timedelta(days=1)
-
-    # Convert dates to unix timestamps
-    start_timestamp = int(date_obj.timestamp())
-    end_timestamp = int(next_day.timestamp())
+    if (partition_date and not partition_col) or (not partition_date and partition_col):
+        raise ValueError(
+            "Both partition_date and partition_col must be provided if one is provided."
+        )
 
     # Build URL for JSON API
     url = f"{DATASETTE_BASE_URL}/{table_name}.json"
@@ -47,10 +35,18 @@ def fetch_datasette_data(table_name, partition_date: str = '2025-01-01', context
     # Initial parameters
     params = {"_size": 1000, "_labels": "on"}  # Fetch 1000 rows per page
 
-    # For statistics table, filter by date using created_ts (unix timestamp)
-    if table_name == "statistics":
-        params["created_ts__gte"] = start_timestamp
-        params["created_ts__lt"] = end_timestamp
+    # For partitioned tables, filter by date using created_ts (unix timestamp)
+    if partition_date and partition_col:
+        # Convert partition date to datetime
+        date_obj = datetime.strptime(partition_date, "%Y-%m-%d")
+        next_day = date_obj + timedelta(days=1)
+
+        # Convert dates to unix timestamps
+        start_timestamp = int(date_obj.timestamp())
+        end_timestamp = int(next_day.timestamp())
+
+        params[f"{partition_col}__gte"] = start_timestamp
+        params[f"{partition_col}__lt"] = end_timestamp
 
     # Get authentication token from environment if available
     auth_token = os.environ.get("DATASETTE_AUTH_TOKEN")
@@ -146,7 +142,6 @@ def fetch_datasette_data(table_name, partition_date: str = '2025-01-01', context
         return str(val)
 
     all_data = all_data.applymap(_to_string)
-    # all_data = all_data.applymap(str)
     timestamp = datetime.timestamp(datetime.now(UTC))
     all_data["loaded_at"] = np.array([timestamp] * len(all_data), dtype=float)
 
