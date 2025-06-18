@@ -9,3 +9,5 @@ select
     , ed.loaded_at
 
 from {{ source('raw', 'event_data') }} as ed
+
+final

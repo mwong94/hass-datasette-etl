@@ -8,3 +8,5 @@ select
     , m.loaded_at
 
 from {{ source('raw', 'statistics_meta') }} as m
+
+final

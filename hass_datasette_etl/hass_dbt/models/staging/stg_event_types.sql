@@ -4,3 +4,5 @@ select
     , et.loaded_at
 
 from {{ source('raw', 'event_types') }} as et
+
+final
