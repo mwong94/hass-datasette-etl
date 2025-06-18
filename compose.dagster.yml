@@ -17,21 +17,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-
-  # ClickHouse database
-  clickhouse:
-    image: clickhouse/clickhouse-server:latest
-    ports:
-      - 8143:8123
-      - 9004:9000
-    volumes:
-      - /data/docker/hass/clickhouse:/var/lib/clickhouse
-    env_file: .env
-    restart: unless-stopped
-    ulimits:
-      nofile:
-        soft: 262144
-        hard: 262144
-
-volumes:
-  dagster_home:
