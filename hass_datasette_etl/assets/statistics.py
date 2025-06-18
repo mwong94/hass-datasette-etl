@@ -72,7 +72,7 @@ def statistics_meta(context: AssetExecutionContext):
 
     # Fetch all metadata data from Datasette
     df = fetch_datasette_data(
-        "statistics",
+        "statistics_meta",
         context=context
     )
 
@@ -103,8 +103,8 @@ statistics_schedule = build_schedule_from_partitioned_job(
 ##### statistics_meta asset job and schedule
 statistics_meta_job = define_asset_job(
     name="statistics_meta_job",
-    selection=[statistics],
-    description="Job that materializes the statistics asset"
+    selection=[statistics_meta],
+    description="Job that materializes the statistics meta asset"
 )
 statistics_meta_schedule = ScheduleDefinition(
     name="weekly_statistics_meta_schedule",
