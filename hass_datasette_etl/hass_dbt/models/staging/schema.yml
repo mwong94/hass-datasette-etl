@@ -7,6 +7,9 @@ sources:
     tables:
       - name: statistics
       - name: statistics_meta
+      - name: events
+      - name: event_data
+      - name: event_types
 
 models:
   - name: stg_statistics
@@ -18,4 +21,9 @@ models:
           - not_null
   - name: stg_statistics_meta
     description: "Home Assistant statistics metadata"
-
+  - name: stg_events
+    description: "Individual events"
+  - name: stg_event_data
+    description: "JSON event data"
+  - name: stg_event_types
+    description: "Event categories"
