@@ -7,7 +7,7 @@ from datetime import datetime
 from dagster import asset, AssetExecutionContext, DailyPartitionsDefinition, MetadataValue, ScheduleDefinition, define_asset_job, build_schedule_from_partitioned_job
 
 
-# Define daily partitions starting from 2023-01-01
+# Define daily partitions starting from 2025-06-07
 start_date = datetime(2025, 6, 7)
 daily_partitions = DailyPartitionsDefinition(
     start_date=start_date,
