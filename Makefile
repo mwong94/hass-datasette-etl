@@ -1,5 +1,5 @@
 up:
-	docker compose up -f compose.dagster.yml
+	docker compose -f compose.dagster.yml up
 
 up-d:
 	docker compose up -d -f compose.dagster.yml
