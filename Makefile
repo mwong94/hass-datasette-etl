@@ -1,20 +1,20 @@
 up:
-	docker compose -f compose.dagster.yml up
+	docker compose up dagster
 
 up-d:
-	docker compose -f compose.dagster.yml up -d
+	docker compose up -d dagster
 
 up-b:
-	docker compose -f compose.dagster.yml up --build
+	docker compose up --build dagster
 
 build-no-cache:
-	docker compose -f compose.dagster.yml build --no-cache
+	docker compose build --no-cache dagster
 
 down:
-	docker compose -f compose.dagster.yml stop
+	docker compose stop dagster
 
 db:
-	docker compose -f compose.db.yml up --build -d
+	docker compose up --build -d clickhouse
 
 up-build: down build-no-cache up
 

@@ -16,19 +16,19 @@ run_launcher:
 
 # --- Storage -------------------------------------------------------------
 run_storage:
-  module: dagster._core.storage.runs.sqlite        # <-- new path
+  module: dagster._core.storage.runs.sqlite
   class: SqliteRunStorage
   config:
     base_dir: /app/dagster_home
 
 event_log_storage:
-  module: dagster._core.storage.event_log.sqlite   # <-- new path
+  module: dagster._core.storage.event_log.sqlite
   class: SqliteEventLogStorage
   config:
     base_dir: /app/dagster_home
 
 schedule_storage:
-  module: dagster._core.storage.schedules.sqlite   # <-- new path
+  module: dagster._core.storage.schedules.sqlite
   class: SqliteScheduleStorage
   config:
     base_dir: /app/dagster_home

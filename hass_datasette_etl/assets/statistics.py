@@ -107,11 +107,11 @@ statistics_meta_job = define_asset_job(
     description="Job that materializes the statistics meta asset"
 )
 statistics_meta_schedule = ScheduleDefinition(
-    name="weekly_statistics_meta_schedule",
+    name="daily_statistics_meta_schedule",
     cron_schedule="20 0 * * *",
     job=statistics_meta_job,
     execution_timezone="America/Los_Angeles",
-    description="Weekly schedule for statistics_meta asset"
+    description="Daily schedule for statistics_meta asset"
 )
 
 # Group assets and schedules for export
