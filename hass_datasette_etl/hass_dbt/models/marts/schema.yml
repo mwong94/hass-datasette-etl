@@ -10,3 +10,11 @@ models:
         tests:
           - unique
           - not_null
+  - name: events
+    description: "Home Assistant granular events"
+    columns:
+      - name: id
+        description: "Primary key"
+        tests:
+          - unique
+          - non_null
