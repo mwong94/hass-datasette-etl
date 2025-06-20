@@ -11,7 +11,7 @@ from dagster import asset, AssetExecutionContext, DailyPartitionsDefinition, Met
 start_date = datetime(2025, 6, 7)
 daily_partitions = DailyPartitionsDefinition(
     start_date=start_date,
-    execution_timezone='America/Los_Angeles',
+    timezone='America/Los_Angeles',
     hour_offset=0,
     minute_offset=15
 )
